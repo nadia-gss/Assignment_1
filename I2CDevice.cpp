@@ -1,4 +1,3 @@
-Listing 1: I2CDevice.cpp
 #include"I2CDevice.h"
 #include<iostream>
 #include<sstream>
