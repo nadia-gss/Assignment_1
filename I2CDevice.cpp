@@ -133,7 +133,43 @@ void I2CDevice::debugDumpRegisters(unsigned int number){
 	}
 	cout << dec;
 }
+/**
+*Method to get time and date.
+*/
+void I2CDevice::printDateTime(){
+	unsigned char* dateTime = this->readRegisters(7,0x00);
+	if(dateTime != nullptr){
+	cout << "Current Date & Time: ";
+	//解析并打印时间
+	cout <<HEX(dateTime[4]) <<"-"<<HEX(dateTime[5]) << "-" << "20" << HEX(dateTime[6]) << " "; // date-month-year
+	cout << HEX(dateTime[2] & 0x3F) << ":" << HEX(dateTime[1]) << ":" << HEX(dateTime[0]); // 时:分:秒
+        cout << endl;
+        delete[] dateTime; // 释放内存
+	}
+	else{
+	cout << "Failed to read Time & Date." << endl;
+	}
+}
+/**
+* Set the current time and date.
+*/
+void I2CDevice::setCurrentDateTime(){
 
+}
+/**
+* Read and display the current temperature.
+*/
+void I2CDevice::printTemperature(){
+	unsigned char* temperature = this->readRegisters(1,0x11);
+	if(temperature != nullptr){
+		
+		cout << "Current temperature: " << temperature[0] << endl;
+		delete[] temperature;
+	}
+	else{
+		cout << "Failed to read the current temperature." << endl;
+	}
+}
 /**
  * Close the file handles and sets a temporary state to -1.
  */
