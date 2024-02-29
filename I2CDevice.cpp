@@ -173,16 +173,35 @@ tm* I2CDevice::getSystemDateTime(){
 }
 
 /**
-* Set the current 
-
-	time_t time = time(NULL);
-	tm* t_tm = localtime(&time);
-	cout << "Local time is " << asctime(t_tm);
-time and date.
+* Set the current time and date.
 */
-void I2CDevice::setCurrentDateTime(){
-	
+tm* I2CDevice::setCurrentDateTime(){
+	tm* system_time =  getSystemDateTime();
+	unsigned char dateTime[7];
 
+	//Day
+	dateTime[4] =  ((system_time->tm_mday / 10) << 4) + (system_time->tm_mday % 10);
+	//Month
+	 dateTime[5] = ((system_time->tm_mon + 1) / 10 << 4) + ((system_time->tm_mon + 1) % 10);
+	//Year
+	dateTime[6] = (((system_time->tm_year + 1900) % 100) / 10 << 4) + ((system_time->tm_year + 1900) % 10);
+	  // Seconds
+    dateTime[0] = ((system_time->tm_sec / 10) << 4) + (system_time->tm_sec % 10);
+
+    // Minutes
+    dateTime[1] = ((system_time->tm_min / 10) << 4) + (system_time->tm_min % 10);
+
+    // Hours (24-hour format)
+    dateTime[2] = ((system_time->tm_hour / 10) << 4) + (system_time->tm_hour % 10);
+	// Day of week (not used in setting)
+    dateTime[3] = 0; // Not setting the day of the week
+
+	//Write
+	for(int i=0;i<7;++i)
+	{
+	writeRegister(i,dateTime[i]);
+	}
+return system_time;
 }
 /**
 * Read and display the current temperature.

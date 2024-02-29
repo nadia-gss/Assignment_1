@@ -35,7 +35,8 @@ int main() {
 	//Get current date and time
 	tm* currentDateTime = device.getSystemDateTime();
 	//Set date and time of RTC
-	cout << "test:"<<currentDateTime->tm_year << endl;
+	tm* time_now = device.setCurrentDateTime();
+
 
     return 0;
 }

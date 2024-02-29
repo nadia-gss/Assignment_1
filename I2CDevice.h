@@ -24,7 +24,7 @@ public:
 	virtual unsigned char* readRegisters(unsigned int number, unsigned int fromAddress=0);
 	virtual int writeRegister(unsigned int registerAddress, unsigned char value);
 	virtual void debugDumpRegisters(unsigned int number = 0xff);
-	virtual void setCurrentDateTime();
+	virtual tm* setCurrentDateTime();
 	virtual void printDateTime();
 	virtual void printTemperature();
 	virtual tm* getSystemDateTime();
