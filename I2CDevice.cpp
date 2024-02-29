@@ -8,6 +8,9 @@
 #include<sys/ioctl.h>
 #include<linux/i2c.h>
 #include<linux/i2c-dev.h>
+#include <chrono>
+#include <ctime>
+#include <array>
 using namespace std;
 
 #define HEX(x) setw(2) << setfill('0') << hex << (int)(x)
@@ -151,25 +154,45 @@ void I2CDevice::printDateTime(){
 	}
 }
 /**
-* Set the current time and date.
+* Get current date and time.
+*/
+tm* I2CDevice::getSystemDateTime(){
+	auto now = chrono::system_clock::now();
+	time_t now_time = chrono::system_clock::to_time_t(now);
+ // 将时间转换为本地时间
+    tm* local_time = localtime(&now_time);
+
+    // 输出日期和时间的数字格式
+	cout << dec << local_time->tm_mday << "-"; // 输出日
+    cout << dec << local_time->tm_mon + 1 << "-"; // 输出月
+    cout << dec << local_time->tm_year + 1900 << " "; // 输出年
+
+	cout << local_time->tm_hour << ":" << local_time->tm_min << ":"
+         << local_time->tm_sec << endl;
+	return local_time;
+}
+
+/**
+* Set the current 
+
+	time_t time = time(NULL);
+	tm* t_tm = localtime(&time);
+	cout << "Local time is " << asctime(t_tm);
+time and date.
 */
 void I2CDevice::setCurrentDateTime(){
+	
 
 }
 /**
 * Read and display the current temperature.
 */
-void I2CDevice::printTemperature(){
-	unsigned char* temperature = this->readRegisters(1,0x11);
-	if(temperature != nullptr){
-		
-		cout << "Current temperature: " << temperature[0] << endl;
-		delete[] temperature;
-	}
-	else{
-		cout << "Failed to read the current temperature." << endl;
-	}
+void I2CDevice::printTemperature() {
+	unsigned char* data  = this->readRegisters(2,0x11);
+	float temperature = data[0]*1.0 + (data[1]>>6)*0.25;
+	cout << "Current temperature : "<< temperature << endl;
 }
+
 /**
  * Close the file handles and sets a temporary state to -1.
  */

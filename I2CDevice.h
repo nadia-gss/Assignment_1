@@ -1,6 +1,7 @@
 #ifndef I2C_H_
 #define I2C_H_
 
+#include <ctime>
 #define I2C_0 "/dev/i2c-0"
 #define I2C_1 "/dev/i2c-1"
 
@@ -23,9 +24,10 @@ public:
 	virtual unsigned char* readRegisters(unsigned int number, unsigned int fromAddress=0);
 	virtual int writeRegister(unsigned int registerAddress, unsigned char value);
 	virtual void debugDumpRegisters(unsigned int number = 0xff);
-	virtual void setCurrentDateTime()
+	virtual void setCurrentDateTime();
 	virtual void printDateTime();
 	virtual void printTemperature();
+	virtual tm* getSystemDateTime();
 	virtual void close();
 	virtual ~I2CDevice();
 };

@@ -1,5 +1,6 @@
 #include "I2CDevice.h"
 #include <iostream>
+#include <ctime>
 
 using namespace std;
 using namespace EE513;
@@ -31,6 +32,10 @@ int main() {
 
 	//Read and display the current temperature
 	device.printTemperature();
+	//Get current date and time
+	tm* currentDateTime = device.getSystemDateTime();
+	//Set date and time of RTC
+	cout << "test:"<<currentDateTime->tm_year << endl;
 
     return 0;
 }
