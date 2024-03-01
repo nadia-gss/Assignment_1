@@ -11,6 +11,7 @@
 #include <chrono>
 #include <ctime>
 #include <array>
+#include <cstdint>
 using namespace std;
 
 #define HEX(x) setw(2) << setfill('0') << hex << (int)(x)
@@ -212,6 +213,29 @@ void I2CDevice::printTemperature() {
 	cout << "Current temperature : "<< temperature << endl;
 }
 
+/**
+* Method to set an alarm.
+* Alarm 1 Registers:0x07-0x0A seconds minutes hours date
+* Alarm 2 Registers:0x0B-0x0D minutes hours date
+*/
+void I2CDevice::setAlarm1(int second,int minute,int hour,int day) {//time on date
+	writeRegister(0x07, decToBcd(second) | 0b00000000);  // second
+        writeRegister(0x08, decToBcd(minute) | 0b00000000);  // minute
+        writeRegister(0x09, decToBcd(hour) |  0b01000000);    // hour
+        writeRegister(0x0A, decToBcd(day) | 0b10000000);
+
+	cout << dec << second <<" " << minute << " "<< hour << " "<< day << endl;
+	while(true){
+	unsigned char date = this->readRegister(0x0F);
+	cout << (int)date << endl;
+	sleep(1);
+	}
+	cout << "Alarm !!!" << endl;
+}
+
+uint8_t I2CDevice::decToBcd(uint8_t val){
+	return ((val / 10*16)+(val%10));
+}
 /**
  * Close the file handles and sets a temporary state to -1.
  */

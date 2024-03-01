@@ -2,6 +2,7 @@
 #define I2C_H_
 
 #include <ctime>
+#include <cstdint>
 #define I2C_0 "/dev/i2c-0"
 #define I2C_1 "/dev/i2c-1"
 
@@ -18,6 +19,7 @@ private:
 	int file;
 public:
 	I2CDevice(unsigned int bus, unsigned int device);
+	virtual uint8_t decToBcd(uint8_t val);
 	virtual int open();
 	virtual int write(unsigned char value);
 	virtual unsigned char readRegister(unsigned int registerAddress);
@@ -28,6 +30,7 @@ public:
 	virtual void printDateTime();
 	virtual void printTemperature();
 	virtual tm* getSystemDateTime();
+	virtual void setAlarm1(int second,int minute,int hour,int day);
 	virtual void close();
 	virtual ~I2CDevice();
 };
