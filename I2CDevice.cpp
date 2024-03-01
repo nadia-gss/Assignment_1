@@ -19,14 +19,14 @@ using namespace std;
 namespace EE513 {
 
 /**
- * Constructor for the I2CDevice class. It requires the bus number and device number.   
- * The constructor opens a file handle to the I2C device, which is destroyed when 
+ * Constructor for the I2CDevice class. It requires the bus number and device number.
+ * The constructor opens a file handle to the I2C device, which is destroyed when
  * the destructor is called
  * @param bus The bus number.
  * @param device The device ID on the bus.
  */
 I2CDevice::I2CDevice(unsigned int bus, unsigned int device) {
-	this->file=-1;
+	this->file = -1;
 	this->bus = bus;
 	this->device = device;
 	this->open();
@@ -36,20 +36,22 @@ I2CDevice::I2CDevice(unsigned int bus, unsigned int device) {
  * Open a connection to an I2C device
  * @return 1 on failure to open to the bus or device, 0 on success.
  */
-int I2CDevice::open(){
-   string name;
-   if(this->bus==0) name = I2C_0;
-   else name = I2C_1;
+int I2CDevice::open() {
+	string name;
+	if (this->bus == 0)
+		name = I2C_0;
+	else
+		name = I2C_1;
 
-   if((this->file=::open(name.c_str(), O_RDWR)) < 0){
-      perror("I2C: failed to open the bus\n");
-	  return 1;
-   }
-   if(ioctl(this->file, I2C_SLAVE, this->device) < 0){
-      perror("I2C: Failed to connect to the device\n");
-	  return 1;
-   }
-   return 0;
+	if ((this->file = ::open(name.c_str(), O_RDWR)) < 0) {
+		perror("I2C: failed to open the bus\n");
+		return 1;
+	}
+	if (ioctl(this->file, I2C_SLAVE, this->device) < 0) {
+		perror("I2C: Failed to connect to the device\n");
+		return 1;
+	}
+	return 0;
 }
 
 /**
@@ -59,15 +61,16 @@ int I2CDevice::open(){
  * @return 1 on failure to write, 0 on success.
  */
 
-int I2CDevice::writeRegister(unsigned int registerAddress, unsigned char value){
-   unsigned char buffer[2];
-   buffer[0] = registerAddress;
-   buffer[1] = value;
-   if(::write(this->file, buffer, 2)!=2){
-      perror("I2C: Failed write to the device\n");
-      return 1;
-   }
-   return 0;
+int I2CDevice::writeRegister(unsigned int registerAddress,
+		unsigned char value) {
+	unsigned char buffer[2];
+	buffer[0] = registerAddress;
+	buffer[1] = value;
+	if (::write(this->file, buffer, 2) != 2) {
+		perror("I2C: Failed write to the device\n");
+		return 1;
+	}
+	return 0;
 }
 
 /**
@@ -76,14 +79,14 @@ int I2CDevice::writeRegister(unsigned int registerAddress, unsigned char value){
  * @param value the value to write to the device
  * @return 1 on failure to write, 0 on success.
  */
-int I2CDevice::write(unsigned char value){
-   unsigned char buffer[1];
-   buffer[0]=value;
-   if (::write(this->file, buffer, 1)!=1){
-      perror("I2C: Failed to write to the device\n");
-      return 1;
-   }
-   return 0;
+int I2CDevice::write(unsigned char value) {
+	unsigned char buffer[1];
+	buffer[0] = value;
+	if (::write(this->file, buffer, 1) != 1) {
+		perror("I2C: Failed to write to the device\n");
+		return 1;
+	}
+	return 0;
 }
 
 /**
@@ -91,175 +94,184 @@ int I2CDevice::write(unsigned char value){
  * @param registerAddress the address to read from
  * @return the byte value at the register address.
  */
-unsigned char I2CDevice::readRegister(unsigned int registerAddress){
-   this->write(registerAddress);
-   unsigned char buffer[1];
-   if(::read(this->file, buffer, 1)!=1){
-      perror("I2C: Failed to read in the value.\n");
-      return 1;
-   }
-   return buffer[0];
+unsigned char I2CDevice::readRegister(unsigned int registerAddress) {
+	this->write(registerAddress);
+	unsigned char buffer[1];
+	if (::read(this->file, buffer, 1) != 1) {
+		perror("I2C: Failed to read in the value.\n");
+		return 1;
+	}
+	return buffer[0];
 }
 
 /**
- * Method to read a number of registers from a single device. This is much more   
- * efficient than reading the registers individually. The from address is the 
+ * Method to read a number of registers from a single device. This is much more
+ * efficient than reading the registers individually. The from address is the
  * starting address to read from, which defaults to 0x00.
  * @param number the number of registers to read from the device
  * @param fromAddress the starting address to read from
  * @return a pointer of type unsigned char* that points to the first element in the block of registers
  */
-unsigned char* I2CDevice::readRegisters(unsigned int number, unsigned int fromAddress){
+unsigned char* I2CDevice::readRegisters(unsigned int number,
+		unsigned int fromAddress) {
 	this->write(fromAddress);
-	unsigned char* data = new unsigned char[number];
-    if(::read(this->file, data, number)!=(int)number){
-       perror("IC2: Failed to read in the full buffer.\n");
-	   return NULL;
-    }
+	unsigned char *data = new unsigned char[number];
+	if (::read(this->file, data, number) != (int) number) {
+		perror("IC2: Failed to read in the full buffer.\n");
+		return NULL;
+	}
 	return data;
 }
 
 /**
- * Method to dump the registers to the standard output. It inserts a return 
- * character after every 16 values and displays the results in hexadecimal to give 
- * a standard output using the HEX() macro that is defined at the top of this file. 
+ * Method to dump the registers to the standard output. It inserts a return
+ * character after every 16 values and displays the results in hexadecimal to give
+ * a standard output using the HEX() macro that is defined at the top of this file.
  * The standard output will stay in hexadecimal format, hence
  * the call on the last like.
  * @param number the total number of registers to dump, defaults to 0xff
  */
 
-void I2CDevice::debugDumpRegisters(unsigned int number){
+void I2CDevice::debugDumpRegisters(unsigned int number) {
 	cout << "Dumping Registers for Debug Purposes:" << endl;
 	unsigned char *registers = this->readRegisters(number);
-	for(int i=0; i<(int)number; i++){
-		cout << HEX(*(registers+i)) << " ";
-		if (i%16==15) cout << endl;
+	for (int i = 0; i < (int) number; i++) {
+		cout << HEX(*(registers + i)) << " ";
+		if (i % 16 == 15)
+			cout << endl;
 	}
 	cout << dec;
 }
 /**
-*Method to get time and date.
-*/
-void I2CDevice::printDateTime(){
-	unsigned char* dateTime = this->readRegisters(7,0x00);
-	if(dateTime != nullptr){
-	cout << "Current Date & Time: ";
-	//解析并打印时间
-	cout <<HEX(dateTime[4]) <<"-"<<HEX(dateTime[5]) << "-" << "20" << HEX(dateTime[6]) << " "; // date-month-year
-	cout << HEX(dateTime[2] & 0x3F) << ":" << HEX(dateTime[1]) << ":" << HEX(dateTime[0]); // 时:分:秒
-        cout << endl;
-        delete[] dateTime; // 释放内存
-	}
-	else{
-	cout << "Failed to read Time & Date." << endl;
+ *Method to get time and date.
+ */
+void I2CDevice::printDateTime() {
+	unsigned char *dateTime = this->readRegisters(7, 0x00);
+	if (dateTime != nullptr) {
+		cout << "Current Date & Time: ";
+		//解析并打印时间
+		cout << HEX(dateTime[4]) << "-" << HEX(dateTime[5]) << "-" << "20"
+				<< HEX(dateTime[6]) << " "; // date-month-year
+		cout
+				<< HEX(
+						dateTime[2]
+								& 0x3F) << ":" << HEX(dateTime[1]) << ":" << HEX(dateTime[0]); // 时:分:秒
+		cout << endl;
+		delete[] dateTime; // 释放内存
+	} else {
+		cout << "Failed to read Time & Date." << endl;
 	}
 }
 /**
-* Get current date and time.
-*/
-tm* I2CDevice::getSystemDateTime(){
+ * Get current date and time.
+ */
+tm* I2CDevice::getSystemDateTime() {
 	auto now = chrono::system_clock::now();
 	time_t now_time = chrono::system_clock::to_time_t(now);
- // 将时间转换为本地时间
-    tm* local_time = localtime(&now_time);
+	// 将时间转换为本地时间
+	tm *local_time = localtime(&now_time);
 
-    // 输出日期和时间的数字格式
+	// 输出日期和时间的数字格式
 	cout << dec << local_time->tm_mday << "-"; // 输出日
-    cout << dec << local_time->tm_mon + 1 << "-"; // 输出月
-    cout << dec << local_time->tm_year + 1900 << " "; // 输出年
+	cout << dec << local_time->tm_mon + 1 << "-"; // 输出月
+	cout << dec << local_time->tm_year + 1900 << " "; // 输出年
 
 	cout << local_time->tm_hour << ":" << local_time->tm_min << ":"
-         << local_time->tm_sec << endl;
+			<< local_time->tm_sec << endl;
 	return local_time;
 }
 
 /**
-* Set the current time and date.
-*/
-tm* I2CDevice::setCurrentDateTime(){
-	tm* system_time =  getSystemDateTime();
+ * Set the current time and date.
+ */
+tm* I2CDevice::setCurrentDateTime() {
+	tm *system_time = getSystemDateTime();
 	unsigned char dateTime[7];
 
 	//Day
-	dateTime[4] =  ((system_time->tm_mday / 10) << 4) + (system_time->tm_mday % 10);
+	dateTime[4] = ((system_time->tm_mday / 10) << 4)
+			+ (system_time->tm_mday % 10);
 	//Month
-	 dateTime[5] = ((system_time->tm_mon + 1) / 10 << 4) + ((system_time->tm_mon + 1) % 10);
+	dateTime[5] = ((system_time->tm_mon + 1) / 10 << 4)
+			+ ((system_time->tm_mon + 1) % 10);
 	//Year
-	dateTime[6] = (((system_time->tm_year + 1900) % 100) / 10 << 4) + ((system_time->tm_year + 1900) % 10);
-	  // Seconds
-    dateTime[0] = ((system_time->tm_sec / 10) << 4) + (system_time->tm_sec % 10);
+	dateTime[6] = (((system_time->tm_year + 1900) % 100) / 10 << 4)
+			+ ((system_time->tm_year + 1900) % 10);
+	// Seconds
+	dateTime[0] = ((system_time->tm_sec / 10) << 4)
+			+ (system_time->tm_sec % 10);
 
-    // Minutes
-    dateTime[1] = ((system_time->tm_min / 10) << 4) + (system_time->tm_min % 10);
+	// Minutes
+	dateTime[1] = ((system_time->tm_min / 10) << 4)
+			+ (system_time->tm_min % 10);
 
-    // Hours (24-hour format)
-    dateTime[2] = ((system_time->tm_hour / 10) << 4) + (system_time->tm_hour % 10);
+	// Hours (24-hour format)
+	dateTime[2] = ((system_time->tm_hour / 10) << 4)
+			+ (system_time->tm_hour % 10);
 	// Day of week (not used in setting)
-    dateTime[3] = 0; // Not setting the day of the week
+	dateTime[3] = 0; // Not setting the day of the week
 
 	//Write
-	for(int i=0;i<7;++i)
-	{
-	writeRegister(i,dateTime[i]);
+	for (int i = 0; i < 7; ++i) {
+		writeRegister(i, dateTime[i]);
 	}
-return system_time;
+	return system_time;
 }
 /**
-* Read and display the current temperature.
-*/
+ * Read and display the current temperature.
+ */
 void I2CDevice::printTemperature() {
-	unsigned char* data  = this->readRegisters(2,0x11);
-	float temperature = data[0]*1.0 + (data[1]>>6)*0.25;
-	cout << "Current temperature : "<< temperature << endl;
+	unsigned char *data = this->readRegisters(2, 0x11);
+	float temperature = data[0] * 1.0 + (data[1] >> 6) * 0.25;
+	cout << "Current temperature : " << temperature << endl;
 }
 
 /**
-* Method to set an alarm.
-* Alarm 1 Registers:0x07-0x0A seconds minutes hours date
-* Alarm 2 Registers:0x0B-0x0D minutes hours date
-*/
-void I2CDevice::setAlarm1(int second,int minute,int hour,int day) {//time on date
+ * Method to set an alarm.
+ * Alarm 1 Registers:0x07-0x0A seconds minutes hours date
+ * Alarm 2 Registers:0x0B-0x0D minutes hours date
+ */
+void I2CDevice::setAlarm1(int second, int minute, int hour, int day) { //time on date
 	writeRegister(0x07, decToBcd(second) | 0b00000000);  // second
-        writeRegister(0x08, decToBcd(minute) | 0b00000000);  // minute
-        writeRegister(0x09, decToBcd(hour) |  0b00000000);    // hour
-        writeRegister(0x0A, decToBcd(day) | 0b10000000);
+	writeRegister(0x08, decToBcd(minute) | 0b00000000);  // minute
+	writeRegister(0x09, decToBcd(hour) | 0b00000000);    // hour
+	writeRegister(0x0A, decToBcd(day) | 0b10000000);
 
-	 writeRegister(0x0F,0b10001000); //The listening bit of alarm 1 is set to 0
+	writeRegister(0x0F, 0b10001000); //The listening bit of alarm 1 is set to 0
 
 	// 读取当前0E寄存器的值
-    unsigned char currentValue = readRegister(0x0E);
+	unsigned char currentValue = readRegister(0x0E);
 
-    // 将第2位设置为1，其他位不变
-    unsigned char newValue = currentValue | (1 << 2);
+	// 将第2位设置为1，其他位不变
+	unsigned char newValue = currentValue | (1 << 2);
 
-
-    // 将新值写回0E寄存器
-    // writeRegister(0x0E,0b00011111);
+	// 将新值写回0E寄存器
+	// writeRegister(0x0E,0b00011111);
 	unsigned char value = readRegister(0x0E);
 	cout << HEX(value) << endl;
 
-	cout << dec << second <<" " << minute << " "<< hour << " "<< day << endl;
+	cout << dec << second << " " << minute << " " << hour << " " << day << endl;
 
 	while (true) {
-        unsigned char flg = readRegister(0x0F); // 读取日期寄存器
-        if (flg & 0x01) { // 检查日期寄存器的第一位，如果是1表示闹钟已经触发
-        cout << "0x0F:" << HEX(flg) << endl;
-	cout << "Alarm triggered!" << endl;
-	unsigned char value = readRegister(0x0F);
-        cout << "Alarm1" <<HEX(value) << endl;
-	break;
-        }
-        sleep(1); // 每秒钟检查一次
-    }
+		unsigned char flg = readRegister(0x0F); // 读取日期寄存器
+		if (flg & 0x01) { // 检查日期寄存器的第一位，如果是1表示闹钟已经触发
+			cout << "0x0F:" << HEX(flg) << endl;
+			cout << "Alarm triggered!" << endl;
+			unsigned char value = readRegister(0x0F);
+			cout << "Alarm1" << HEX(value) << endl;
+			break;
+		}
+		sleep(1); // 每秒钟检查一次
+	}
 }
 
-uint8_t I2CDevice::decToBcd(uint8_t val){
-	return ((val / 10*16)+(val%10));
+uint8_t I2CDevice::decToBcd(uint8_t val) {
+	return ((val / 10 * 16) + (val % 10));
 }
 /**
  * Close the file handles and sets a temporary state to -1.
  */
-void I2CDevice::close(){
+void I2CDevice::close() {
 	::close(this->file);
 	this->file = -1;
 }
@@ -268,8 +280,8 @@ void I2CDevice::close(){
  * Closes the file on destruction, provided that it has not already been closed.
  */
 I2CDevice::~I2CDevice() {
-	if(file!=-1) this->close();
+	if (file != -1)
+		this->close();
 }
 
 } /* namespace EE513*/
-
