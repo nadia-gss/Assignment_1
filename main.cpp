@@ -37,7 +37,7 @@ int main() {
 	//Set date and time of RTC
 	tm* time_now = device.setCurrentDateTime();
 	//Set an alarm
-	device.setAlarm1(0,17,17,1);
+	device.setAlarm1(0,42,20,1);
 
     return 0;
 }

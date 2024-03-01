@@ -221,16 +221,36 @@ void I2CDevice::printTemperature() {
 void I2CDevice::setAlarm1(int second,int minute,int hour,int day) {//time on date
 	writeRegister(0x07, decToBcd(second) | 0b00000000);  // second
         writeRegister(0x08, decToBcd(minute) | 0b00000000);  // minute
-        writeRegister(0x09, decToBcd(hour) |  0b01000000);    // hour
+        writeRegister(0x09, decToBcd(hour) |  0b00000000);    // hour
         writeRegister(0x0A, decToBcd(day) | 0b10000000);
 
+	 writeRegister(0x0F,0b10001000); //The listening bit of alarm 1 is set to 0
+
+	// 读取当前0E寄存器的值
+    unsigned char currentValue = readRegister(0x0E);
+
+    // 将第2位设置为1，其他位不变
+    unsigned char newValue = currentValue | (1 << 2);
+
+
+    // 将新值写回0E寄存器
+    // writeRegister(0x0E,0b00011111);
+	unsigned char value = readRegister(0x0E);
+	cout << HEX(value) << endl;
+
 	cout << dec << second <<" " << minute << " "<< hour << " "<< day << endl;
-	while(true){
-	unsigned char date = this->readRegister(0x0F);
-	cout << (int)date << endl;
-	sleep(1);
-	}
-	cout << "Alarm !!!" << endl;
+
+	while (true) {
+        unsigned char flg = readRegister(0x0F); // 读取日期寄存器
+        if (flg & 0x01) { // 检查日期寄存器的第一位，如果是1表示闹钟已经触发
+        cout << "0x0F:" << HEX(flg) << endl;
+	cout << "Alarm triggered!" << endl;
+	unsigned char value = readRegister(0x0F);
+        cout << "Alarm1" <<HEX(value) << endl;
+	break;
+        }
+        sleep(1); // 每秒钟检查一次
+    }
 }
 
 uint8_t I2CDevice::decToBcd(uint8_t val){
