@@ -1,6 +1,7 @@
 #include "I2CDevice.h"
 #include <iostream>
 #include <ctime>
+#include <unistd.h>
 
 using namespace std;
 using namespace EE513;
@@ -37,7 +38,10 @@ int main() {
 	//Set date and time of RTC
 	tm *time_now = device.setCurrentDateTime();
 	//Set an alarm
-	device.setAlarm1(0, 42, 20, 1);
+	device.setAlarm1(0,47, 13, 3);
+	device.enableSquareWaveOutput(true, SQW_1_HZ);
+	sleep(10);
+	device.enableSquareWaveOutput(false, SQW_1_HZ);
 
 	return 0;
 }

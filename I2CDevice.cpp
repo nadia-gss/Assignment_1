@@ -231,26 +231,23 @@ void I2CDevice::printTemperature() {
  * Alarm 1 Registers:0x07-0x0A seconds minutes hours date
  * Alarm 2 Registers:0x0B-0x0D minutes hours date
  */
-void I2CDevice::setAlarm1(int second, int minute, int hour, int day) { //time on date
+void I2CDevice::setAlarm1(int second, int minute, int hour, int date) { //time on date
 	writeRegister(0x07, decToBcd(second) | 0b00000000);  // second
 	writeRegister(0x08, decToBcd(minute) | 0b00000000);  // minute
 	writeRegister(0x09, decToBcd(hour) | 0b00000000);    // hour
-	writeRegister(0x0A, decToBcd(day) | 0b10000000);
+	writeRegister(0x0A, decToBcd(date) | 0b00000000);
 
 	writeRegister(0x0F, 0b10001000); //The listening bit of alarm 1 is set to 0
 
 	// 读取当前0E寄存器的值
 	unsigned char currentValue = readRegister(0x0E);
-
-	// 将第2位设置为1，其他位不变
-	unsigned char newValue = currentValue | (1 << 2);
-
 	// 将新值写回0E寄存器
-	// writeRegister(0x0E,0b00011111);
+	writeRegister(0x0E,0b00011111);
+
 	unsigned char value = readRegister(0x0E);
 	cout << HEX(value) << endl;
 
-	cout << dec << second << " " << minute << " " << hour << " " << day << endl;
+	cout << dec << second << " " << minute << " " << hour << " " << date << endl;
 
 	while (true) {
 		unsigned char flg = readRegister(0x0F); // 读取日期寄存器
@@ -259,15 +256,75 @@ void I2CDevice::setAlarm1(int second, int minute, int hour, int day) { //time on
 			cout << "Alarm triggered!" << endl;
 			unsigned char value = readRegister(0x0F);
 			cout << "Alarm1" << HEX(value) << endl;
+			// 将新值写回0E寄存器
+        		writeRegister(0x0E,0b00011100);
 			break;
 		}
 		sleep(1); // 每秒钟检查一次
 	}
 }
 
+void I2CDevice::setAlarm2(int minute, int hour, int date) {
+    // Set alarm time registers
+    writeRegister(0x0B, decToBcd(minute) | 0b10000000);  // Minute (set bit 7 to 1 for Alarm2)
+    writeRegister(0x0C, decToBcd(hour) | 0b10000000);    // Hour (set bit 7 to 1 for Alarm2)
+    writeRegister(0x0D, decToBcd(date) | 0b10000000);    // Date (set bit 7 to 1 for Alarm2)
+
+    writeRegister(0x0F, 0b10001000); // Control register for Alarm2
+
+    // Set interrupt enable for Alarm2
+    unsigned char currentValue = readRegister(0x0E);
+    writeRegister(0x0E, currentValue | 0b00000100); // Set A2IE bit (bit 2) to enable Alarm2 interrupt
+
+    while (true) {
+        unsigned char flg = readRegister(0x0F); // Read Control/Status register
+        if (flg & 0b00000010) { // Check Alarm2 flag
+            cout << "Alarm triggered!" << endl;
+            break; // Exit the loop after the alarm is triggered
+        }
+        sleep(1); // Check every second
+    }
+}
+
 uint8_t I2CDevice::decToBcd(uint8_t val) {
 	return ((val / 10 * 16) + (val % 10));
 }
+
+
+/**
+方波
+*/
+void I2CDevice::enableSquareWaveOutput(bool enable, SquareWaveFrequency frequency) {
+        // 读取当前控制寄存器值
+        unsigned char controlRegisterValue = readRegister(0x0E);
+	
+	writeRegister(0x0F,0b10001000); //A1F,A2F设置为0
+
+        // 设置或清除OUT引脚以启用或禁用方波输出
+	if (enable) {
+        	controlRegisterValue |= (1 << 1); // 将第2位设置为0以启用方波输出
+	// 设置方波频率
+        controlRegisterValue &= 0b11110011; // 清除第2-3位以设置频率
+        controlRegisterValue |= (frequency << 2); // 设置频率位
+    	} else {
+		cout << "关闭方波输出" << endl;
+        	controlRegisterValue = 0x1c; // 将第2位清零以禁用方波输出
+    	}
+
+        // 写回修改后的控制寄存器值
+	writeRegister(0x0F, 0b10001000); //The listening bit of alarm 1 is set to 0
+        writeRegister(0x0E, controlRegisterValue);
+	controlRegisterValue = readRegister(0x0E);
+	cout << "修改后的寄存器值：" << HEX(controlRegisterValue) << endl;
+    }
+
+
+
+
+
+
+
+
 /**
  * Close the file handles and sets a temporary state to -1.
  */

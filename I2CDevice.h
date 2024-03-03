@@ -6,6 +6,15 @@
 #define I2C_0 "/dev/i2c-0"
 #define I2C_1 "/dev/i2c-1"
 
+
+enum SquareWaveFrequency {
+    SQW_1_HZ = 0b0000,
+    SQW_1024_HZ = 0b0001,
+    SQW_4096_HZ = 0b0010,
+    SQW_8192_HZ = 0b0011
+};
+
+
 namespace EE513{
 
 /**
@@ -30,7 +39,9 @@ public:
 	virtual void printDateTime();
 	virtual void printTemperature();
 	virtual tm* getSystemDateTime();
-	virtual void setAlarm1(int second,int minute,int hour,int day);
+	virtual void setAlarm1(int second,int minute,int hour,int date);
+	virtual void setAlarm2(int minute,int hour,int date);
+	virtual void enableSquareWaveOutput(bool enable, SquareWaveFrequency frequency);
 	virtual void close();
 	virtual ~I2CDevice();
 };
