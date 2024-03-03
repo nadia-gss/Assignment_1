@@ -38,27 +38,27 @@ int main() {
 	//Set an alarm
 //	device.setAlarm1(0,23, 21, 3);
 
-//Set the square wave output frequency to 1
-/** cout << "Set the square wave output frequency to 1: ";
-device.enableSquareWaveOutput(true, SQW_1_HZ);
-sleep(5);
-device.enableSquareWaveOutput(false, SQW_1_HZ);
-//Set the square wave output frequency to 1024
-cout << "Set the square wave output frequency to 1024: ";
-device.enableSquareWaveOutput(true, SQW_1024_HZ);
-sleep(5);
-device.enableSquareWaveOutput(false, SQW_1024_HZ);
-cout << "Set the square wave output frequency to 4096: ";
-//Set the square wave output frequency to 4096
-device.enableSquareWaveOutput(true, SQW_4096_HZ);
-sleep(5);
-device.enableSquareWaveOutput(false, SQW_4096_HZ);
-//Set the square wave output frequency to 8192
-cout << "Set the square wave output frequency to 8192: ";
-device.enableSquareWaveOutput(true, SQW_8192_HZ);
-sleep(5);
-device.enableSquareWaveOutput(false, SQW_8192_HZ);
-*/
+	//Set the square wave output frequency to 1
+	/** cout << "Set the square wave output frequency to 1: ";
+	device.enableSquareWaveOutput(true, SQW_1_HZ);
+	sleep(5);
+	device.enableSquareWaveOutput(false, SQW_1_HZ);
+	//Set the square wave output frequency to 1024
+	cout << "Set the square wave output frequency to 1024: ";
+	device.enableSquareWaveOutput(true, SQW_1024_HZ);
+	sleep(5);
+	device.enableSquareWaveOutput(false, SQW_1024_HZ);
+	cout << "Set the square wave output frequency to 4096: ";
+	//Set the square wave output frequency to 4096
+	device.enableSquareWaveOutput(true, SQW_4096_HZ);
+	sleep(5);
+	device.enableSquareWaveOutput(false, SQW_4096_HZ);
+	//Set the square wave output frequency to 8192
+	cout << "Set the square wave output frequency to 8192: ";
+	device.enableSquareWaveOutput(true, SQW_8192_HZ);
+	sleep(5);
+	device.enableSquareWaveOutput(false, SQW_8192_HZ);
+	*/
 //	device.setAlarm2(50,17,3);
 	device.monitorTemperature();
 	return 0;
