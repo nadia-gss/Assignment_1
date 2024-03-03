@@ -7,17 +7,13 @@ using namespace std;
 using namespace EE513;
 
 int main() {
-	// 创建一个 I2CDevice 对象并连接到指定的 I2C 设备
 	I2CDevice device(1, 0x68);
-
-	/**    // 写数据
+/**
 	 device.writeRegister(0x00, 0xFF);
 
-	 // 读取一个字节的数据并打印输出
 	 unsigned char data = device.readRegister(0x00);
 	 cout << "Data read from register: " << hex << (int)data << endl;
 
-	 // 读取多个数据并打印输出
 	 unsigned char *registers = device.readRegisters(4, 0x00);
 	 cout << "Data read from multiple registers: ";
 	 for (int i = 0; i < 4; ++i) {
@@ -25,25 +21,45 @@ int main() {
 	 }
 	 cout << endl;
 
-	 // 调试输出寄存器的内容
 	 device.debugDumpRegisters(16); */
 
-	//打印输出RTC模块的当前时间和日期
-/**	device.printDateTime();
+	//print date and time
+	device.printDateTime();
 
 	//Read and display the current temperature
+	cout << "Current temperature: " ;
 	device.printTemperature();
+	cout << "°C" << endl;
 	//Get current date and time
 	tm *currentDateTime = device.getSystemDateTime();
 	//Set date and time of RTC
 	tm *time_now = device.setCurrentDateTime();
+
 	//Set an alarm
-	device.setAlarm1(0,47, 13, 3);
-	device.enableSquareWaveOutput(true, SQW_8192_HZ);
-	sleep(10);
-	device.enableSquareWaveOutput(false, SQW_1_HZ);
+//	device.setAlarm1(0,23, 21, 3);
+
+//Set the square wave output frequency to 1
+/** cout << "Set the square wave output frequency to 1: ";
+device.enableSquareWaveOutput(true, SQW_1_HZ);
+sleep(5);
+device.enableSquareWaveOutput(false, SQW_1_HZ);
+//Set the square wave output frequency to 1024
+cout << "Set the square wave output frequency to 1024: ";
+device.enableSquareWaveOutput(true, SQW_1024_HZ);
+sleep(5);
+device.enableSquareWaveOutput(false, SQW_1024_HZ);
+cout << "Set the square wave output frequency to 4096: ";
+//Set the square wave output frequency to 4096
+device.enableSquareWaveOutput(true, SQW_4096_HZ);
+sleep(5);
+device.enableSquareWaveOutput(false, SQW_4096_HZ);
+//Set the square wave output frequency to 8192
+cout << "Set the square wave output frequency to 8192: ";
+device.enableSquareWaveOutput(true, SQW_8192_HZ);
+sleep(5);
+device.enableSquareWaveOutput(false, SQW_8192_HZ);
 */
-	device.setAlarm2(50,17,3);
-//	device.monitorTemperature();
+//	device.setAlarm2(50,17,3);
+	device.monitorTemperature();
 	return 0;
 }

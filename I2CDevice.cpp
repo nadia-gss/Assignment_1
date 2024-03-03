@@ -12,6 +12,7 @@
 #include <ctime>
 #include <array>
 #include <cstdint>
+#include <bitset>
 using namespace std;
 
 #define HEX(x) setw(2) << setfill('0') << hex << (int)(x)
@@ -169,7 +170,7 @@ tm* I2CDevice::getSystemDateTime() {
 	time_t now_time = chrono::system_clock::to_time_t(now);
 	// Converts the format to local time
 	tm *local_time = localtime(&now_time);
-
+	cout << "Current system date and time: " ;
 	cout << dec << local_time->tm_mday << "-"; // date
 	cout << dec << local_time->tm_mon + 1 << "-"; // month
 	cout << dec << local_time->tm_year + 1900 << " "; // year
@@ -213,7 +214,9 @@ tm* I2CDevice::setCurrentDateTime() {
 	for (int i = 0; i < 7; ++i) {
 		writeRegister(i, dateTime[i]);
 	}
+	cout << "The current system time has been written to the RTC device." << endl;
 	return system_time;
+
 }
 /**
  * Read and display the current temperature.
@@ -258,10 +261,10 @@ void I2CDevice::setAlarm1(int second, int minute, int hour, int date) { //time o
 	// Reads the value of the current 0E register
 	unsigned char currentValue = readRegister(0x0E);
 	// Set intcn a1ie : 1
-	writeRegister(0x0E, 0b00011101);
+	writeRegister(0x0E, 0b00000111);
 
 	unsigned char value = readRegister(0x0E);
-	cout << HEX(value) << endl;
+	//cout << HEX(value) << endl;
 
 	cout << dec << "Alarm 1 has been enabled: date-" << date << " " << hour
 			<< ":" << minute << ":" << second << endl;
@@ -273,8 +276,6 @@ void I2CDevice::setAlarm1(int second, int minute, int hour, int date) { //time o
 			cout << "Alarm triggered!" << endl;
 			unsigned char value = readRegister(0x0F);
 			cout << "Alarm1" << HEX(value) << endl;
-			// Set A1IE:0
-			writeRegister(0x0E, 0b00011100);
 			break;
 		}
 		sleep(1); // Check once per second
@@ -317,23 +318,20 @@ void I2CDevice::enableSquareWaveOutput(bool enable,
 
 	// Set or clear the INTCN pin to enable or disable square wave output
 	if (enable) {
-		// Set bit 3 to 0 to enable square wave output
-		controlRegisterValue &= ~(1 << 2);
-		// Clear bits 4 and 5
-		controlRegisterValue &= ~(0b110 << 3);
+		// Set bit 2 to 0 to enable square wave output
 		// Set bit 5 and bit 4 according to frequency
 		switch (frequency) {
 		case SQW_1_HZ:
-			controlRegisterValue |= (0b00 << 3);
+			controlRegisterValue = SQW_1_HZ;
 			break;
 		case SQW_1024_HZ:
-			controlRegisterValue |= (0b01 << 3);
+			controlRegisterValue = SQW_1024_HZ;
 			break;
 		case SQW_4096_HZ:
-			controlRegisterValue |= (0b10 << 3);
+			controlRegisterValue = SQW_4096_HZ;
 			break;
 		case SQW_8192_HZ:
-			controlRegisterValue |= (0b11 << 3);
+			controlRegisterValue = SQW_8192_HZ;
 			break;
 		}
 	} else {
@@ -345,7 +343,7 @@ void I2CDevice::enableSquareWaveOutput(bool enable,
 
 	// Read the modified register values for debugging output
 	controlRegisterValue = readRegister(0x0E);
-	cout << "0x0E：" << HEX(controlRegisterValue) << endl;
+	cout << "0x0E：" << bitset<8>(controlRegisterValue) << endl;
 }
 
 /**
@@ -362,7 +360,7 @@ void I2CDevice::monitorTemperature() {
 		float temperature = printTemperature();
 		cout << "°C" << endl;
 
-		if (temperature < 0 || temperature > 5) {
+		if (temperature < 0 || temperature > 10) {
 			printDateTime();
 			cout << "Alert! Abnormal weather!" << endl;
 			cout << " " << endl;
@@ -371,7 +369,7 @@ void I2CDevice::monitorTemperature() {
 			printDateTime();
 			cout << " " << endl;
 		}
-		sleep(300); //Control the interval time
+		sleep(5); //Control the interval time
 	}
 }
 

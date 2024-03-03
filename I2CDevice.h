@@ -7,10 +7,10 @@
 #define I2C_1 "/dev/i2c-1"
 
 enum SquareWaveFrequency {
-    SQW_1_HZ = 0b0000,
-    SQW_1024_HZ = 0b0001,
-    SQW_4096_HZ = 0b0010,
-    SQW_8192_HZ = 0b0011
+    SQW_1_HZ =    0b00000000,
+    SQW_1024_HZ = 0b00001000,
+    SQW_4096_HZ = 0b00010000,
+    SQW_8192_HZ = 0b00011000,
 };
 
 
