@@ -150,8 +150,11 @@ void I2CDevice::printDateTime() {
 	if (dateTime != nullptr) {
 		cout << "Current Date & Time: ";
 		//Reformat dates
-		cout << HEX(dateTime[4]) << "-" << HEX(dateTime[5]) << "-" << "20" << HEX(dateTime[6]) << " "; // date-month-year
-		cout<< HEX(dateTime[2]) << ":" << HEX(dateTime[1]) << ":" << HEX(dateTime[0]); // hour:minute:second
+		cout << HEX(dateTime[4]) << "-" << HEX(dateTime[5]) << "-" << "20"
+				<< HEX(dateTime[6]) << " "; // date-month-year
+		cout
+				<< HEX(
+						dateTime[2]) << ":" << HEX(dateTime[1]) << ":" << HEX(dateTime[0]); // hour:minute:second
 		cout << endl;
 		delete[] dateTime;
 	} else {
@@ -164,13 +167,12 @@ void I2CDevice::printDateTime() {
 tm* I2CDevice::getSystemDateTime() {
 	auto now = chrono::system_clock::now();
 	time_t now_time = chrono::system_clock::to_time_t(now);
-	// 将时间转换为本地时间
+	// Converts the format to local time
 	tm *local_time = localtime(&now_time);
 
-	// 输出日期和时间的数字格式
-	cout << dec << local_time->tm_mday << "-"; // 输出日
-	cout << dec << local_time->tm_mon + 1 << "-"; // 输出月
-	cout << dec << local_time->tm_year + 1900 << " "; // 输出年
+	cout << dec << local_time->tm_mday << "-"; // date
+	cout << dec << local_time->tm_mon + 1 << "-"; // month
+	cout << dec << local_time->tm_year + 1900 << " "; // year
 
 	cout << local_time->tm_hour << ":" << local_time->tm_min << ":"
 			<< local_time->tm_sec << endl;
@@ -217,26 +219,26 @@ tm* I2CDevice::setCurrentDateTime() {
  * Read and display the current temperature.
  */
 float I2CDevice::printTemperature() {
-    	float temperature = 0.0;
+	float temperature = 0.0;
 	unsigned char *data = this->readRegisters(2, 0x11);
-    if (data != nullptr) {
-        // Retrieve the sign bit
-        bool isNegative = (data[0] & 0x80) != 0;
-        // Obtain the integer part
-        int integerPart = data[0] & 0x7F; // Get bits 6 to 0 (integer part)
-        // Obtain the decimal part
-        int decimalPart = data[1] >> 6; // Get bits 7 and 6 from data[1] (decimal part)
-        // Calculate the temperature value
-        temperature = integerPart + decimalPart * 0.25;
-        // Adjust the temperature value if it is negative
-        if (isNegative) {
-            temperature = -temperature;
-        }
-        cout  << temperature;
-        delete[] data; // Free memory
-    } else {
-        cout << "Failed to read temperature data." << endl;
-    }
+	if (data != nullptr) {
+		// Retrieve the sign bit
+		bool isNegative = (data[0] & 0x80) != 0;
+		// Obtain the integer part
+		int integerPart = data[0] & 0x7F; // Get bits 6 to 0 (integer part)
+		// Obtain the decimal part
+		int decimalPart = data[1] >> 6; // Get bits 7 and 6 from data[1] (decimal part)
+		// Calculate the temperature value
+		temperature = integerPart + decimalPart * 0.25;
+		// Adjust the temperature value if it is negative
+		if (isNegative) {
+			temperature = -temperature;
+		}
+		cout << temperature;
+		delete[] data; // Free memory
+	} else {
+		cout << "Failed to read temperature data." << endl;
+	}
 	return temperature;
 }
 
@@ -253,129 +255,125 @@ void I2CDevice::setAlarm1(int second, int minute, int hour, int date) { //time o
 
 	writeRegister(0x0F, 0b10001000); //The listening bit of alarm 1 is set to 0
 
-	// 读取当前0E寄存器的值
+	// Reads the value of the current 0E register
 	unsigned char currentValue = readRegister(0x0E);
-	// 将新值写回0E寄存器
-	writeRegister(0x0E,0b00011111);
+	// Set intcn a1ie : 1
+	writeRegister(0x0E, 0b00011101);
 
 	unsigned char value = readRegister(0x0E);
 	cout << HEX(value) << endl;
 
-	cout << dec << second << " " << minute << " " << hour << " " << date << endl;
+	cout << dec << "Alarm 1 has been enabled: date-" << date << " " << hour
+			<< ":" << minute << ":" << second << endl;
 
 	while (true) {
-		unsigned char flg = readRegister(0x0F); // 读取日期寄存器
-		if (flg & 0x01) { // 检查日期寄存器的第一位，如果是1表示闹钟已经触发
+		unsigned char flg = readRegister(0x0F); // Read date register
+		if (flg & 0x01) { // Check the first digit of the date register. If it is 1, the alarm has been triggered
 			cout << "0x0F:" << HEX(flg) << endl;
 			cout << "Alarm triggered!" << endl;
 			unsigned char value = readRegister(0x0F);
 			cout << "Alarm1" << HEX(value) << endl;
-			// 将新值写回0E寄存器
-        		writeRegister(0x0E,0b00011100);
+			// Set A1IE:0
+			writeRegister(0x0E, 0b00011100);
 			break;
 		}
-		sleep(1); // 每秒钟检查一次
+		sleep(1); // Check once per second
 	}
 }
 
 void I2CDevice::setAlarm2(int minute, int hour, int date) {
-    // Set alarm time registers
-    writeRegister(0x0B, decToBcd(minute) | 0b10000000);  // Minute (set bit 7 to 1 for Alarm2)
-    writeRegister(0x0C, decToBcd(hour) | 0b10000000);    // Hour (set bit 7 to 1 for Alarm2)
-    writeRegister(0x0D, decToBcd(date) | 0b10000000);    // Date (set bit 7 to 1 for Alarm2)
+	// Set alarm time registers
+	writeRegister(0x0B, decToBcd(minute) | 0b10000000); // Minute (set bit 7 to 1 for Alarm2)
+	writeRegister(0x0C, decToBcd(hour) | 0b10000000); // Hour (set bit 7 to 1 for Alarm2)
+	writeRegister(0x0D, decToBcd(date) | 0b10000000); // Date (set bit 7 to 1 for Alarm2)
 
-    writeRegister(0x0F, 0b10001000); // Control register for Alarm2
+	writeRegister(0x0F, 0b10001000); // Control register for Alarm2
 
-    // Set interrupt enable for Alarm2
-    unsigned char currentValue = readRegister(0x0E);
-	writeRegister(0x0E,0b00011111); // Set 0E
-	
+	// Set interrupt enable for Alarm2
+	unsigned char currentValue = readRegister(0x0E);
+	writeRegister(0x0E, 0b00011111); // Set 0E
+
 	printDateTime();
-    while (true) {
-        unsigned char flg = readRegister(0x0F); // Read Control/Status register
-        if (flg & 0b00000010) { // Check Alarm2 flag
-            cout << "Alarm triggered!" << endl;
-            break; // Exit the loop after the alarm is triggered
-        }
-        sleep(1); // Check every second
-    }
+	while (true) {
+		unsigned char flg = readRegister(0x0F); // Read Control/Status register
+		if (flg & 0b00000010) { // Check Alarm2 flag
+			cout << "Alarm triggered!" << endl;
+			break; // Exit the loop after the alarm is triggered
+		}
+		sleep(1); // Check every second
+	}
 }
 
 uint8_t I2CDevice::decToBcd(uint8_t val) {
 	return ((val / 10 * 16) + (val % 10));
 }
 
+/**
+ Wrap the square-wave generation functionality of the RTC module.
+ */
+void I2CDevice::enableSquareWaveOutput(bool enable,
+		SquareWaveFrequency frequency) {
+	unsigned char controlRegisterValue = readRegister(0x0E);
+
+	// Set or clear the INTCN pin to enable or disable square wave output
+	if (enable) {
+		// Set bit 3 to 0 to enable square wave output
+		controlRegisterValue &= ~(1 << 2);
+		// Clear bits 4 and 5
+		controlRegisterValue &= ~(0b110 << 3);
+		// Set bit 5 and bit 4 according to frequency
+		switch (frequency) {
+		case SQW_1_HZ:
+			controlRegisterValue |= (0b00 << 3);
+			break;
+		case SQW_1024_HZ:
+			controlRegisterValue |= (0b01 << 3);
+			break;
+		case SQW_4096_HZ:
+			controlRegisterValue |= (0b10 << 3);
+			break;
+		case SQW_8192_HZ:
+			controlRegisterValue |= (0b11 << 3);
+			break;
+		}
+	} else {
+		cout << "Turn off square wave output" << endl;
+		controlRegisterValue |= (1 << 2); // Set INTCN pin to 1 to disable square wave output
+	}
+
+	writeRegister(0x0E, controlRegisterValue);
+
+	// Read the modified register values for debugging output
+	controlRegisterValue = readRegister(0x0E);
+	cout << "0x0E：" << HEX(controlRegisterValue) << endl;
+}
 
 /**
-方波
-*/
-void I2CDevice::enableSquareWaveOutput(bool enable, SquareWaveFrequency frequency) {
-// 读取当前控制寄存器值
-    unsigned char controlRegisterValue = readRegister(0x0E);
+ * I designed the novel method to achieve temperature monitoring
+ * When the temperature is higher than 40 degrees or lower than 0 degrees,
+ * it is a special weather, the control light flashes to alarm,
+ * and the temperature is queried every 5 minutes,
+ * and the debugging process will be adjusted to other time intervals.
+ */
 
-    // 设置或清除OUT引脚以启用或禁用方波输出
-    if (enable) {
-        // 设置第 3 位为 0 以启用方波输出
-        controlRegisterValue &= ~(1 << 2);
-        // 清除第 4 和第 5 位
-        controlRegisterValue &= ~(0b110 << 3);
-        // 根据频率设置第 5 和第 4 位
-        switch(frequency) {
-            case SQW_1_HZ:
-                controlRegisterValue |= (0b00 << 3);
-                break;
-            case SQW_1024_HZ:
-                controlRegisterValue |= (0b01 << 3);
-                break;
-            case SQW_4096_HZ:
-                controlRegisterValue |= (0b10 << 3);
-                break;
-            case SQW_8192_HZ:
-                controlRegisterValue |= (0b11 << 3);
-                break;
-        }
-    } else {
-        cout << "关闭方波输出" << endl;
-        // 禁用方波输出
-        controlRegisterValue |= (1 << 2); // 设置第 3 位为 1 以禁用方波输出
-    }
-
-    // 写回修改后的控制寄存器值
-    writeRegister(0x0E, controlRegisterValue);
-
-    // 读取修改后的寄存器值以进行调试输出
-    controlRegisterValue = readRegister(0x0E);
-    cout << "修改后的寄存器值：" << HEX(controlRegisterValue) << endl;
-    }
-
-
-
-/**
-* 我设计的特色方法，实现对温度的监控
-* 当温度高于40度或低于0度时，属于特殊天气，控制小灯闪烁来进行警报，每5分钟进行一次温度的查询，调试过程中会调整为其他时间间隔。
-*/
-
-void I2CDevice::monitorTemperature(){
-	while(true){
+void I2CDevice::monitorTemperature() {
+	while (true) {
 		cout << "Current temperature : ";
 		float temperature = printTemperature();
 		cout << "°C" << endl;
-		
-		if(temperature < 0 || temperature > 5){
-                        printDateTime();
+
+		if (temperature < 0 || temperature > 5) {
+			printDateTime();
 			cout << "Alert! Abnormal weather!" << endl;
 			cout << " " << endl;
 			enableSquareWaveOutput(true, SQW_1_HZ);
-		}else{
+		} else {
 			printDateTime();
 			cout << " " << endl;
 		}
-		sleep(300); //控制间隔的时间
+		sleep(300); //Control the interval time
 	}
 }
-
-
-
 
 /**
  * Close the file handles and sets a temporary state to -1.
