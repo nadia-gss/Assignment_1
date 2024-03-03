@@ -29,7 +29,7 @@ int main() {
 	 device.debugDumpRegisters(16); */
 
 	//打印输出RTC模块的当前时间和日期
-	device.printDateTime();
+/**	device.printDateTime();
 
 	//Read and display the current temperature
 	device.printTemperature();
@@ -39,9 +39,11 @@ int main() {
 	tm *time_now = device.setCurrentDateTime();
 	//Set an alarm
 	device.setAlarm1(0,47, 13, 3);
-	device.enableSquareWaveOutput(true, SQW_1_HZ);
+	device.enableSquareWaveOutput(true, SQW_8192_HZ);
 	sleep(10);
 	device.enableSquareWaveOutput(false, SQW_1_HZ);
-
+*/
+	device.setAlarm2(50,17,3);
+//	device.monitorTemperature();
 	return 0;
 }
